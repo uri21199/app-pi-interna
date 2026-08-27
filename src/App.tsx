@@ -7,13 +7,11 @@ import { Home } from './app/Home';
 import { GrillaModule } from './features/grilla/GrillaModule';
 import { PasadasModule } from './features/pasadas/PasadasModule';
 import { Confirmar } from './features/grilla/pages/Confirmar';
-import { GrillasAdmin } from './features/grilla/pages/Admin';
 import { AulasAdmin } from './features/pasadas/pages/Admin';
 import { MiPerfil } from './features/perfil/MiPerfil';
 import { Materiales } from './features/materiales/pages/Materiales';
 import { AdminPlaceholder } from './features/admin/AdminPlaceholder';
 import { MilitantesAdmin } from './features/admin/MilitantesAdmin';
-import { CambiosHorariosAdmin } from './features/admin/CambiosHorariosAdmin';
 
 function App() {
   return (
@@ -44,14 +42,6 @@ function App() {
                       }
                     />
                     <Route
-                      path="/admin/grillas"
-                      element={
-                        <RequireAdmin>
-                          <GrillasAdmin />
-                        </RequireAdmin>
-                      }
-                    />
-                    <Route
                       path="/admin/aulas"
                       element={
                         <RequireAdmin>
@@ -64,14 +54,6 @@ function App() {
                       element={
                         <RequireAdmin>
                           <AdminPlaceholder titulo="Historial pasadas/mesita" />
-                        </RequireAdmin>
-                      }
-                    />
-                    <Route
-                      path="/admin/cambios-horarios"
-                      element={
-                        <RequireAdmin>
-                          <CambiosHorariosAdmin />
                         </RequireAdmin>
                       }
                     />

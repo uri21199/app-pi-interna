@@ -3,8 +3,8 @@ import { Resumen } from './pages/Resumen';
 
 // La ruta pública /grilla/confirmar/:token vive a nivel del shell (src/App.tsx),
 // fuera de este módulo: no debe pasar por RequireAuth/AppLayout.
-// La administración de horarios de mesita se movió al panel admin global
-// (/admin/grillas, ver src/App.tsx) — este módulo ya no tiene su propio tab de Admin.
+// La edición de cursada/trabajo de un militante ahora la hace cada uno desde
+// Mi Perfil — ya no existe un panel admin separado para eso.
 export function GrillaModule() {
   return (
     <Routes>

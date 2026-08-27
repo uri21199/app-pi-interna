@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../shared/AuthProvider';
 import { supabase } from '../../shared/supabase';
-import { registrarCambio } from './historial';
 import { DIAS_SEMANA, type CursadaMilitante, type DiaSemana, type TrabajoMilitante } from '../grilla/types/db';
 import { Cargando } from '../../shared/Spinner';
 import { HorarioFijoMesita } from './HorarioFijoMesita';
@@ -188,21 +187,6 @@ export function MiPerfil() {
       return false;
     }
 
-    const original = cursadaOriginal[c.id];
-    for (const campo of CAMPOS_CURSADA) {
-      if (original && original[campo] !== c[campo]) {
-        await registrarCambio({
-          militanteId: perfil.id,
-          modificadoPor: perfil.id,
-          tabla: 'cursada_militante',
-          registroId: c.id,
-          campoModificado: campo,
-          valorAnterior: normalizarValor(campo, original[campo]),
-          valorNuevo: normalizarValor(campo, c[campo]),
-          accion: 'editar',
-        });
-      }
-    }
     setCursadaOriginal((prev) => ({ ...prev, [c.id]: c }));
     setGuardando(false);
     setMensaje('Cursada guardada.');
@@ -219,16 +203,6 @@ export function MiPerfil() {
       setMensaje(`Error: ${error.message}`);
       return;
     }
-    await registrarCambio({
-      militanteId: perfil.id,
-      modificadoPor: perfil.id,
-      tabla: 'cursada_militante',
-      registroId: c.id,
-      campoModificado: 'fila completa',
-      valorAnterior: describirCursada(c),
-      valorNuevo: null,
-      accion: 'eliminar',
-    });
     setCursada((prev) => prev.filter((x) => x.id !== c.id));
     setGuardando(false);
     setMensaje('Cursada eliminada.');
@@ -248,16 +222,6 @@ export function MiPerfil() {
       setMensaje(`Error: ${error?.message ?? 'no se pudo crear'}`);
       return;
     }
-    await registrarCambio({
-      militanteId: perfil.id,
-      modificadoPor: perfil.id,
-      tabla: 'cursada_militante',
-      registroId: data.id,
-      campoModificado: 'fila completa',
-      valorAnterior: null,
-      valorNuevo: describirCursada(data),
-      accion: 'crear',
-    });
     setCursada((prev) => [...prev, data]);
     setCursadaOriginal((prev) => ({ ...prev, [data.id]: data }));
     setNuevaCursada(CURSADA_VACIA);
@@ -308,21 +272,6 @@ export function MiPerfil() {
       return false;
     }
 
-    const original = trabajoOriginal[t.id];
-    for (const campo of CAMPOS_TRABAJO) {
-      if (original && original[campo] !== t[campo]) {
-        await registrarCambio({
-          militanteId: perfil.id,
-          modificadoPor: perfil.id,
-          tabla: 'trabajo_militante',
-          registroId: t.id,
-          campoModificado: campo,
-          valorAnterior: normalizarValor(campo, original[campo]),
-          valorNuevo: normalizarValor(campo, t[campo]),
-          accion: 'editar',
-        });
-      }
-    }
     setTrabajoOriginal((prev) => ({ ...prev, [t.id]: t }));
     setGuardando(false);
     setMensaje('Trabajo guardado.');
@@ -339,16 +288,6 @@ export function MiPerfil() {
       setMensaje(`Error: ${error.message}`);
       return;
     }
-    await registrarCambio({
-      militanteId: perfil.id,
-      modificadoPor: perfil.id,
-      tabla: 'trabajo_militante',
-      registroId: t.id,
-      campoModificado: 'fila completa',
-      valorAnterior: describirTrabajo(t),
-      valorNuevo: null,
-      accion: 'eliminar',
-    });
     setTrabajo((prev) => prev.filter((x) => x.id !== t.id));
     setGuardando(false);
     setMensaje('Trabajo eliminado.');
@@ -368,16 +307,6 @@ export function MiPerfil() {
       setMensaje(`Error: ${error?.message ?? 'no se pudo crear'}`);
       return;
     }
-    await registrarCambio({
-      militanteId: perfil.id,
-      modificadoPor: perfil.id,
-      tabla: 'trabajo_militante',
-      registroId: data.id,
-      campoModificado: 'fila completa',
-      valorAnterior: null,
-      valorNuevo: describirTrabajo(data),
-      accion: 'crear',
-    });
     setTrabajo((prev) => [...prev, data]);
     setTrabajoOriginal((prev) => ({ ...prev, [data.id]: data }));
     setNuevoTrabajo(TRABAJO_VACIO);

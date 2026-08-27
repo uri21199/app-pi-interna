@@ -13,10 +13,8 @@ const NAV_BASE = [
 
 const NAV_ADMIN = [
   { to: '/admin/militantes', label: 'Militantes' },
-  { to: '/admin/grillas', label: 'Grillas' },
   { to: '/admin/aulas', label: 'Aulas' },
   { to: '/admin/historial', label: 'Historial pasadas/mesita' },
-  { to: '/admin/cambios-horarios', label: 'Cambios de horarios' },
 ];
 
 const linkClase = ({ isActive }: { isActive: boolean }) =>

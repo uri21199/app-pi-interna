@@ -99,7 +99,8 @@ export function Home() {
           to={`/grilla/confirmar/${pendiente.token}`}
           className="mt-3 block rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 active:bg-amber-100"
         >
-          Todavía no respondiste si podés cubrir la mesita el {labelFecha(pendiente.fecha)} — tocá para confirmar →
+          No respondiste la notificación de antes — ¿podés cubrir la mesita {labelFecha(pendiente.fecha).toLowerCase()}?
+          Tocá para confirmar →
         </Link>
       )}
 

@@ -10,10 +10,8 @@ const TITULOS: { prefix: string; titulo: string }[] = [
   { prefix: '/materiales', titulo: 'Materiales' },
   { prefix: '/perfil', titulo: 'Mi perfil' },
   { prefix: '/admin/militantes', titulo: 'Militantes' },
-  { prefix: '/admin/grillas', titulo: 'Grillas' },
   { prefix: '/admin/aulas', titulo: 'Aulas' },
   { prefix: '/admin/historial', titulo: 'Historial pasadas/mesita' },
-  { prefix: '/admin/cambios-horarios', titulo: 'Cambios de horarios' },
 ];
 
 function tituloDe(pathname: string): string {

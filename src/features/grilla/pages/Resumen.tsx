@@ -34,6 +34,85 @@ function estadoDe(n: NotificacionAgrupada): Estado {
   return n.disponible ? 'disponible' : 'no_disponible';
 }
 
+function Mensaje({ texto }: { texto: string | null }) {
+  if (!texto) return null;
+  const esError = texto.startsWith('Error');
+  return (
+    <p
+      role="alert"
+      aria-live={esError ? 'assertive' : 'polite'}
+      className={`mt-2 rounded-lg p-2 text-sm ${esError ? 'bg-red-50 text-red-700' : 'bg-emerald-50 text-emerald-700'}`}
+    >
+      {texto}
+    </p>
+  );
+}
+
+function errorAmigable(accion: string, error: unknown): string {
+  console.error(error);
+  return `Error: no se pudo ${accion}. Probá de nuevo en un momento.`;
+}
+
+// Vivía en la pantalla de admin "Grillas" (ya eliminada, era redundante con
+// que cada militante carga su propia cursada/trabajo desde Mi Perfil) — este
+// es el único pedazo de esa pantalla que seguía teniendo sentido, así que se
+// mudó acá junto al resto de lo que un admin mira semana a semana.
+function EjeSemanalCard() {
+  const [texto, setTexto] = useState('');
+  const [cargando, setCargando] = useState(true);
+  const [guardando, setGuardando] = useState(false);
+  const [mensaje, setMensaje] = useState<string | null>(null);
+  const semana = lunesDeLaSemana(formatDateLocal(new Date()));
+
+  useEffect(() => {
+    supabase
+      .from('ejes_semanales')
+      .select('texto')
+      .eq('semana', semana)
+      .maybeSingle()
+      .then(({ data }) => {
+        setTexto(data?.texto ?? '');
+        setCargando(false);
+      });
+  }, [semana]);
+
+  async function guardar() {
+    setGuardando(true);
+    setMensaje(null);
+    const { error } = await supabase.from('ejes_semanales').upsert({ semana, texto }, { onConflict: 'semana' });
+    setGuardando(false);
+    setMensaje(error ? errorAmigable('guardar el eje', error) : 'Eje guardado.');
+  }
+
+  return (
+    <div className="mt-3 rounded-xl border border-slate-200 bg-white p-3">
+      <h2 className="text-sm font-semibold text-slate-700">Eje de la semana (desde {semana})</h2>
+      {cargando ? (
+        <Cargando className="mt-2 text-sm text-slate-400" />
+      ) : (
+        <>
+          <textarea
+            aria-label="Eje de la semana"
+            value={texto}
+            onChange={(e) => setTexto(e.target.value)}
+            rows={2}
+            placeholder="Texto que se manda en el mail de esta semana"
+            className="mt-2 w-full rounded-lg border border-slate-300 px-2 py-1 text-sm"
+          />
+          <button
+            onClick={guardar}
+            disabled={guardando}
+            className="mt-2 rounded-lg bg-blue-600 px-3 py-1 text-sm font-medium text-white disabled:opacity-50"
+          >
+            Guardar eje
+          </button>
+          <Mensaje texto={mensaje} />
+        </>
+      )}
+    </div>
+  );
+}
+
 function agruparPorFecha(filas: VistaCoberturaDia[]): Record<string, NotificacionAgrupada[]> {
   const porNotificacion = new Map<string, NotificacionAgrupada>();
 
@@ -109,6 +188,8 @@ export function Resumen() {
   return (
     <div className="mx-auto min-h-screen max-w-2xl bg-slate-50 p-4 pb-16">
       <h1 className="text-lg font-semibold text-slate-800">Resumen de cobertura</h1>
+
+      <EjeSemanalCard />
 
       <div className="mt-3 flex items-center gap-2">
         <button
