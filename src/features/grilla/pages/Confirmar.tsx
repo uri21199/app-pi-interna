@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { addDays, formatDateLocal, formatFechaLarga } from '../lib/dia';
 import { Cargando } from '../../../shared/Spinner';
 
@@ -14,7 +14,7 @@ interface ConfirmarData {
   hora_hasta: string | null;
 }
 
-type Modo = 'cargando' | 'error' | 'elegir' | 'horario' | 'confirmar_no' | 'enviando' | 'listo';
+type Modo = 'cargando' | 'error' | 'elegir' | 'horario' | 'enviando' | 'listo';
 
 function encabezadoFecha(fechaIso: string): string {
   const hoy = formatDateLocal(new Date());
@@ -26,7 +26,6 @@ function encabezadoFecha(fechaIso: string): string {
 
 export function Confirmar() {
   const { token } = useParams<{ token: string }>();
-  const [searchParams] = useSearchParams();
   const [data, setData] = useState<ConfirmarData | null>(null);
   const [modo, setModo] = useState<Modo>('cargando');
   const [errorMsg, setErrorMsg] = useState('');
@@ -45,19 +44,7 @@ export function Confirmar() {
         setHoraDesde(d.hora_desde?.slice(0, 5) ?? d.clases[0]?.hora_inicio.slice(0, 5) ?? '');
         setHoraHasta(d.hora_hasta?.slice(0, 5) ?? d.clases[0]?.hora_fin.slice(0, 5) ?? '');
 
-        if (d.yaRespondido) {
-          setModo('listo');
-          return;
-        }
-
-        const r = searchParams.get('r');
-        // No confirmamos "no puedo" solo por abrir el link: algunos mails
-        // pre-visitan los links del cuerpo para chequear que no sean
-        // maliciosos, y eso dispararía este GET sin que la persona haga nada.
-        // Por eso "no" también pasa por una pantalla que pide un tap explícito.
-        if (r === 'no') setModo('confirmar_no');
-        else if (r === 'si') setModo('horario');
-        else setModo('elegir');
+        setModo(d.yaRespondido ? 'listo' : 'elegir');
       })
       .catch(() => setModo('error'));
   }, [token]);
@@ -167,26 +154,6 @@ export function Confirmar() {
           >
             No puedo
           </button>
-        </div>
-      )}
-
-      {modo === 'confirmar_no' && (
-        <div className="mt-5 space-y-3">
-          <p className="text-sm text-slate-600">Vas a marcar que no podés cubrir mañana. ¿Confirmás?</p>
-          <div className="flex gap-3">
-            <button
-              onClick={() => enviar(false)}
-              className="flex-1 rounded-lg bg-slate-700 py-3 font-medium text-white active:bg-slate-800"
-            >
-              Sí, no puedo
-            </button>
-            <button
-              onClick={() => setModo('horario')}
-              className="flex-1 rounded-lg border border-slate-300 py-3 font-medium text-slate-700 active:bg-slate-100"
-            >
-              En realidad sí puedo
-            </button>
-          </div>
         </div>
       )}
 

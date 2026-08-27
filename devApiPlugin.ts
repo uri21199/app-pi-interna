@@ -243,9 +243,10 @@ export function devApiPlugin(): Plugin {
         }
       });
 
-      // Página pública /grilla/confirmar/:token (llega por mail, sin login):
-      // expone server/confirmar.ts, que hoy no tiene ningún otro lugar donde
-      // vivir porque se sacó el redirect /api/* que tenía netlify.toml.
+      // Página pública /grilla/confirmar/:token (sin login: se abre desde el
+      // aviso de Home o, a futuro, una notificación push): expone
+      // server/confirmar.ts, que hoy no tiene ningún otro lugar donde vivir
+      // porque se sacó el redirect /api/* que tenía netlify.toml.
       server.middlewares.use('/api/confirmar', async (req, res) => {
         try {
           const { handler } = await import('./server/confirmar.ts');

@@ -119,9 +119,9 @@ export const handler = async (event: FunctionEvent): Promise<FunctionResponse> =
           disponible,
           hora_desde: disponible ? hora_desde : null,
           hora_hasta: disponible ? hora_hasta : null,
-          // Esta es una respuesta real de la persona (por mail): si la fila
-          // venía autoconfirmada por un horario fijo, deja de estarlo — así
-          // no se borra por error si después se elimina ese horario fijo.
+          // Esta es una respuesta real de la persona: si la fila venía
+          // autoconfirmada por un horario fijo, deja de estarlo — así no se
+          // borra por error si después se elimina ese horario fijo.
           autoconfirmado: false,
         })
         .eq('token', token)

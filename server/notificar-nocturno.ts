@@ -1,6 +1,6 @@
 import { supabaseAdmin } from './lib/supabaseAdmin';
 import { diaSemanaDe } from './lib/dia';
-import { crearYNotificar, autoconfirmarPorHorarioFijo } from './lib/crearNotificacion';
+import { crearPendiente, autoconfirmarPorHorarioFijo } from './lib/crearNotificacion';
 
 // Argentina no usa horario de verano: offset fijo UTC-3.
 const AR_OFFSET_MS = 3 * 60 * 60 * 1000;
@@ -15,11 +15,12 @@ function fechaArgentina(offsetDias: number): string {
 
 // Pensado para correr todas las noches vía un cron/scheduler externo (a
 // definir según el hosting elegido — antes era una Netlify Scheduled
-// Function). Notifica a militantes activos que: (a) cursan mañana, o (b) no
-// tienen ninguna cursada/trabajo cargado todavía (no sabemos si están
-// ocupados, así que se les pregunta igual con el mensaje genérico). Nunca
-// duplica una notificación ya creada para esa fecha, así que reintentar el
-// cron el mismo día es inofensivo.
+// Function). Crea la fila pendiente de militantes activos que: (a) cursan
+// mañana, o (b) no tienen ninguna cursada/trabajo cargado todavía (no sabemos
+// si están ocupados, así que se les pregunta igual). No manda nada por sí
+// solo — el aviso (hoy el banner de Home, a futuro push) es un canal aparte.
+// Nunca duplica una notificación ya creada para esa fecha, así que reintentar
+// el cron el mismo día es inofensivo.
 export const handler = async () => {
   const manana = fechaArgentina(1);
   const diaManana = diaSemanaDe(manana);
@@ -59,10 +60,10 @@ export const handler = async () => {
 
   const pendientes = (militantes ?? []).filter((m) => !yaNotificadosSet.has(m.id));
 
-  // Quien tiene horario fijo para mañana no se le pregunta por mail: se
+  // Quien tiene horario fijo para mañana no se le pregunta nada: se
   // autoconfirma directo con esos horarios (ver server/lib/crearNotificacion.ts).
   const autoconfirmar = pendientes.filter((m) => fijoPorMilitante.has(m.id));
-  const candidatosMail = pendientes.filter((m) => {
+  const candidatosPendiente = pendientes.filter((m) => {
     if (fijoPorMilitante.has(m.id)) return false;
     const diasCursada = diasPorMilitante.get(m.id);
     const tieneClaseManana = diasCursada?.has(diaManana) ?? false;
@@ -70,21 +71,21 @@ export const handler = async () => {
     return tieneClaseManana || sinHorarioCargado;
   });
 
-  const [resultadosAuto, resultadosMail] = await Promise.all([
+  const [resultadosAuto, resultadosPendiente] = await Promise.all([
     Promise.allSettled(
       autoconfirmar.map((m) => {
         const fijo = fijoPorMilitante.get(m.id)!;
         return autoconfirmarPorHorarioFijo(m.id, manana, fijo.hora_desde, fijo.hora_hasta);
       }),
     ),
-    Promise.allSettled(candidatosMail.map((m) => crearYNotificar(m.id, manana))),
+    Promise.allSettled(candidatosPendiente.map((m) => crearPendiente(m.id, manana))),
   ]);
 
   const autoconfirmados = resultadosAuto.filter((r) => r.status === 'fulfilled' && r.value.ok).length;
-  const enviados = resultadosMail.filter((r) => r.status === 'fulfilled' && r.value.ok).length;
+  const creados = resultadosPendiente.filter((r) => r.status === 'fulfilled' && r.value.ok).length;
 
   console.log(
-    `notificar-nocturno: ${manana} (${diaManana}) — ${autoconfirmados} autoconfirmados por horario fijo, ${candidatosMail.length} candidatos por mail, ${enviados} mails enviados.`,
+    `notificar-nocturno: ${manana} (${diaManana}) — ${autoconfirmados} autoconfirmados por horario fijo, ${creados} de ${candidatosPendiente.length} candidatos quedaron pendientes de responder.`,
   );
   return { statusCode: 200 };
 };
